@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rgtomo"
+version = "0.1.0"
+description = "Python port of the rg-tomo-matlab electron tomography toolbox"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "scipy>=1.10",
+    "scikit-image>=0.19",
+    "matplotlib",
+    "astra-toolbox",
+    "stackview",
+    "ipywidgets>=8",
+    "ipycanvas",
+    "tifffile",
+    "mrcfile",
+    "h5py",
+    "pandas",
+    "tqdm",
+]
+
+[project.optional-dependencies]
+tia = ["rosettasciio"]
+keyboard = ["ipyevents"]
+
+[tool.setuptools]
+packages = ["rgtomo"]
