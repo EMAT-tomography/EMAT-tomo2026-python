@@ -15,7 +15,7 @@ dependencies = [
     "matplotlib",
     "astra-toolbox",
     "stackview",
-    "ipywidgets>=8",
+    "ipywidgets>=7.6",
     "ipycanvas",
     "tifffile",
     "mrcfile",

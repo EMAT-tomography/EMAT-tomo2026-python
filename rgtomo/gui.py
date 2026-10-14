@@ -107,8 +107,11 @@ class _ImageCanvas:
 class _GUIBase:
     widget = None
 
-    def _repr_mimebundle_(self, **kwargs):
-        return self.widget._repr_mimebundle_(**kwargs)
+    def _ipython_display_(self, **kwargs):
+        # display() works with ipywidgets 7 (e.g. Google Colab), which has no
+        # _repr_mimebundle_ on widgets, and with ipywidgets 8
+        from IPython.display import display
+        display(self.widget)
 
     def display(self):
         from IPython.display import display
