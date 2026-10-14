@@ -1,2 +1,6 @@
 # Ignore local datasets
 /data/
+
+# Python bytecode
+__pycache__/
+*.pyc
