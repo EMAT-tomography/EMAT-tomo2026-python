@@ -382,10 +382,12 @@ class TiltAxisGUI(_GUIBase):
         self._recs_cur = [None] * 3
         self._labels_init = [w.HTML() for _ in range(3)]
         self._labels_cur = [w.HTML() for _ in range(3)]
+        # one row per slice: initial (left) and preview (right)
         rec_grid = w.GridBox(
-            [w.VBox([lab, c.mc]) for lab, c in zip(self._labels_init, self.init_canvases)]
-            + [w.VBox([lab, c.mc]) for lab, c in zip(self._labels_cur, self.cur_canvases)],
-            layout=w.Layout(grid_template_columns=f"repeat(3, {rec_size + 10}px)"))
+            [w.VBox([lab, c.mc]) for i in range(3)
+             for lab, c in ((self._labels_init[i], self.init_canvases[i]),
+                            (self._labels_cur[i], self.cur_canvases[i]))],
+            layout=w.Layout(grid_template_columns=f"repeat(2, {rec_size + 10}px)"))
         controls = w.VBox(self.slice_sliders + [self.rot_slider, self.shift_slider,
                                                 w.HBox([self.alg, self.n_iter]),
                                                 w.HBox([self.preview_btn, w.Label("Contrast:"),
@@ -393,10 +395,13 @@ class TiltAxisGUI(_GUIBase):
                                                 self.status,
                                                 _help("Red: tilt axis. Positive translation moves the axis "
                                                       "to the right, positive rotation turns it clockwise. "
-                                                      "Click on the projection to move slice 2. Top row: "
-                                                      "initial slices, bottom row: preview. Apply with "
+                                                      "Click on the projection to move slice 2. Left: "
+                                                      "initial slices, right: preview. Apply with "
                                                       "<code>series = gui.result()</code>.")])
-        self.widget = w.VBox([w.HBox([self.mip.mc, controls]), rec_grid])
+        # projection above the controls, slices on the right (they wrap below
+        # only if the output area is too narrow)
+        self.widget = w.HBox([w.VBox([self.mip.mc, controls]), rec_grid],
+                             layout=w.Layout(flex_flow="row wrap", align_items="flex-start"))
         self._draw_lines()
         self._compute(initial=True)
 
