@@ -16,7 +16,27 @@ interactive tools are ipywidgets/ipycanvas GUIs in the notebook; reconstructions
 numpy, scipy, scikit-image, matplotlib, astra-toolbox (CUDA), stackview, ipywidgets, ipycanvas,
 ipyevents (keyboard shortcuts), tifffile, mrcfile, h5py, pandas, tqdm and rosettasciio (TIA `.emi/.ser`).
 
-## Getting started
+## Getting started - on colab
+
+A google colab [notebook](https://colab.research.google.com/drive/1tIl27NedC5-OZ-7DSNg_nO6hhytwprTZ?usp=sharing) is provided to quickly test the workflow.
+1. Go to the notebook link. You can run the cells as is, but if you want to save your own changes, first do *File>Save a copy in Drive*
+2. Connect to a GPU runtime.
+3. That's it! You can run the cells and explore the results.
+
+Some test data can be imported automatically from the notebook. To use your own data, either download the toolbox to run on your computer (see below) or upload the data to your google drive, then mount your drive in the colab environment:
+
+```python
+from google.colab import drive
+drive.mount("/content/drive")
+```
+
+You can then retrieve your data by  point `fname` to the right folder in your drive:
+
+```python
+fname = "/content/drive/MyDrive/.../YourTomoData"
+```
+
+## Getting started - on your computer
 
 1. Start JupyterLab (or VS Code) with an environment that contains the required libraries and open `tomography.ipynb`.
 2. The first cell adds this folder to `sys.path` (the equivalent of MATLAB's `addpath`), so the

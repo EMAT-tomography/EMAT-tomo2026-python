@@ -54,7 +54,13 @@ def _to_rgb(img, vmin=None, vmax=None):
 
 
 class _ImageCanvas:
-    """Two-layer ipycanvas (image + overlay) with coordinates in image pixels."""
+    """Two-layer ipycanvas (image + overlay) with coordinates in image pixels.
+
+    The last image and the overlay shapes are kept and redrawn whenever a
+    layer reports ``client_ready``: some front ends (Google Colab's widget
+    manager) lose draw commands sent before the canvas exists in the browser,
+    such as an image drawn right after the canvas is created.
+    """
 
     def __init__(self, shape, display_size=420):
         from ipycanvas import MultiCanvas
@@ -67,6 +73,11 @@ class _ImageCanvas:
         self.mc = MultiCanvas(2, width=self.width, height=self.height)
         self.mc.layout = w.Layout(width=f"{self.width}px", height=f"{self.height}px")
         self.image_layer, self.overlay = self.mc[0], self.mc[1]
+        self._rgb = None
+        self._shapes = []
+        # MultiCanvas.on_client_ready only watches the top layer: register both
+        self.image_layer.on_client_ready(self._draw_image)
+        self.overlay.on_client_ready(self._draw_overlay)
 
     def _resample(self, img):
         ny, nx = self.shape
@@ -81,24 +92,46 @@ class _ImageCanvas:
     def set_image(self, img, vmin=None, vmax=None):
         img = np.asarray(img)
         rgb = img if (img.ndim == 3 and img.shape[-1] == 3 and img.dtype == np.uint8) else _to_rgb(img, vmin, vmax)
-        self.image_layer.put_image_data(np.ascontiguousarray(self._resample(rgb)), 0, 0)
+        self._rgb = np.ascontiguousarray(self._resample(rgb))
+        self._draw_image()
+
+    def _draw_image(self):
+        if self._rgb is not None:
+            self.image_layer.put_image_data(self._rgb, 0, 0)
 
     def clear_overlay(self):
+        self._shapes = []
         self.overlay.clear()
 
     def line(self, x0, y0, x1, y1, color="red", width=2):
         """Line between pixel centres (x = column, y = row)."""
         z = self.zoom
-        self.overlay.stroke_style = color
-        self.overlay.line_width = width
-        self.overlay.stroke_line((x0 + 0.5) * z, (y0 + 0.5) * z, (x1 + 0.5) * z, (y1 + 0.5) * z)
+        self._add_shape(("line", ((x0 + 0.5) * z, (y0 + 0.5) * z, (x1 + 0.5) * z, (y1 + 0.5) * z), color, width))
 
     def rect(self, x0, y0, w, h, color="yellow", width=2):
         """Rectangle covering the pixels x0..x0+w-1, y0..y0+h-1."""
         z = self.zoom
+        self._add_shape(("rect", (x0 * z, y0 * z, w * z, h * z), color, width))
+
+    def _add_shape(self, shape):
+        self._shapes.append(shape)
+        self._stroke(shape)
+
+    def _stroke(self, shape):
+        kind, coords, color, width = shape
         self.overlay.stroke_style = color
         self.overlay.line_width = width
-        self.overlay.stroke_rect(x0 * z, y0 * z, w * z, h * z)
+        if kind == "line":
+            self.overlay.stroke_line(*coords)
+        else:
+            self.overlay.stroke_rect(*coords)
+
+    def _draw_overlay(self):
+        from ipycanvas import hold_canvas
+        with hold_canvas(self.overlay):
+            self.overlay.clear()
+            for shape in self._shapes:
+                self._stroke(shape)
 
     def to_image(self, x, y):
         return x / self.zoom, y / self.zoom

@@ -81,7 +81,7 @@ def slice_viewer(stack, scale=None, display_size=512, zoom_factor=None, colormap
                            display_min=vmin, display_max=vmax, slider_text="Slice")
 
 
-def orthoslice_viewer(volume, scale=None, display_size=384, zoom_factor=None, colormap=None,
+def orthoslice_viewer(volume, scale=None, display_size=100, zoom_factor=None, colormap=None,
                       display_min=None, display_max=None, percentiles=None):
     """Three orthogonal slices through a volume (``orthosliceViewer``).
     ``scale`` downsizes all three axes (``imresize3``)."""
